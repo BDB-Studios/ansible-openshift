@@ -1,0 +1,6 @@
+.idea
+.virtualenv/
+certs/
+__pycache__/
+vendor/
+.venv

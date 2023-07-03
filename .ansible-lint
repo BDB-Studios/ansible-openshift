@@ -1,0 +1,16 @@
+skip_list:
+  - yaml[line-length]
+  - jinja[spacing]
+  - name[template]
+  - yaml[comments]
+  - experimental
+  - yaml[octal-values]
+  - galaxy[no-changelog]
+  - galaxy[tags]
+  - galaxy[no-runtime]
+  - template-instead-of-copy
+  - no-tabs
+exclude_paths:
+  - vendor
+  - virtualenv
+  - venv
