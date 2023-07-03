@@ -1,0 +1,17 @@
+ansible
+ansible-lint
+awscli
+boto3
+botocore
+cryptography
+docker
+jmespath
+jsonpatch
+kubernetes
+netaddr
+openshift
+orionsdk
+passlib
+psycopg2-binary
+requests
+urllib3
