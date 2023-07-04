@@ -1,0 +1,14 @@
+[all:vars]
+
+[kvm_host]
+kvm.remote
+
+[bastion:children]
+bastion.kvm ansible_host=192.18.150.10
+
+[nfs:children]
+kvm_host
+
+[all:children]
+nfs
+bastion
