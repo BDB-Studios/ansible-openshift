@@ -1,0 +1,25 @@
+---
+
+dns:
+  domain: "openshift.internal"
+  clusterid: "{{ cluster_id }}"
+  forwarder1: "{{ ansible_default_ipv4.address }}"   # DNS forwarder
+  lb_ipaddr: "{{ ansible_default_ipv4.address }}" # This needs to be your ip from the provision output default: IP4.ADDRESS[1]
+  use_srv_records: false
+  use_etcd_records: false
+  reverse_zone: "50.168.192"
+
+networking_defaults:
+  gateway: "192.168.50.1"
+  ntp:
+    - time.google.com
+  subnet_mask: "255.255.255.0"
+  broadcast: "192.168.50.0"
+  network: "192.168.50.0"
+  prefix: "24"
+
+dhcp:
+  router: "192.168.50.1"
+  netmask: "255.255.255.0"
+
+...

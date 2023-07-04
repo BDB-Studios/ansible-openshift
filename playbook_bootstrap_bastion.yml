@@ -1,0 +1,105 @@
+---
+
+- name: Create our kvm bastion node if needed
+  hosts: kvm_host
+  become: true
+  gather_facts: true
+  roles:
+    - role: bdbstudios.openshift_kvm.prepare_server
+      when: use_kvm_helpers | default(false) | bool
+    - role: bdbstudios.openshift_kvm.provision_support_kvm_nodes
+      when: use_kvm_helpers | default(false) | bool and use_kvm_bastion | default(true) | bool
+      vars:
+        use_kvm_bootstrap: false
+        bootstrap: []
+  tags:
+    - always
+
+- name: Ensure our dependencies are installed
+  hosts: all
+  become: true
+  roles:
+    - role: bdbstudios.openshift_bootstrap.common_dependencies
+  tags:
+    - always
+
+- name: Configure BIND DNS Services Container
+  hosts: bastion
+  become: true
+  roles:
+    - role: bdbstudios.openshift_bootstrap.dns_server
+      when: configure_dns | default(false) | bool
+  tags:
+    - dns
+
+- name: Configure HTTP Proxy Container
+  hosts: bastion
+  become: true
+  pre_tasks:
+    - name: Set our no_proxy string
+      ansible.builtin.set_fact:
+        no_proxy_base: ".apps.{{ dns.clusterid }}.{{ dns.domain }},.{{ dns.clusterid }}.{{ dns.domain }}"
+        no_proxy_lans: "{% if vlans is defined %}{% for vlan in vlans %}{{ vlan.network}}/{{ vlan.prefix }}{%if not loop.last %},{%endif %}{% endfor %}{% else %}{{ networking_defaults.broadcast }}/{{ networking_defaults.prefix }}{% endif %}"
+        no_proxy_networks: "{{ ansible_all_ipv4_addresses | sort  | map('regex_replace', '^(.*)$', '\\1/32') | list | join(',')  }}"
+  roles:
+    - role: bdbstudios.openshift_bootstrap.squid_proxy
+      when: configure_squid_proxy | default(false) | bool
+  tags:
+    - squid
+
+- name: Configure DHCPD service containers
+  hosts: bastion
+  become: true
+  roles:
+    - role: bdbstudios.openshift_bootstrap.dhcp_server
+      when: configure_dhcp | default(false) | bool
+  tags:
+    - dhcpd
+
+- name: Configure pxe boot assets and services
+  hosts: bastion
+  become: true
+  roles:
+    - role: bdbstudios.openshift_bootstrap.ssh_keypair
+    - role: bdbstudios.openshift_bootstrap.openshift_binaries
+    - role: bdbstudios.openshift_bootstrap.boot_asset_servers
+  tags:
+    - httpd
+    - tftp
+
+- name: Configure HAProxy Containers
+  hosts: bastion
+  become: true
+  roles:
+    - role: bdbstudios.openshift_bootstrap.haproxy
+      when: configure_haproxy | default(false) | bool
+  tags:
+    - haproxy
+
+- name: Configure OC environment for CLI access
+  hosts: bastion
+  become: true
+  roles:
+    - role: bdbstudios.openshift_bootstrap.bastion_config
+  tags:
+    - always
+
+- name: Configure NFS Server
+  hosts: nfs
+  become: true
+  roles:
+    - role: bdbstudios.openshift_bootstrap.nfs_server
+  tags:
+    - nfs
+
+- name: Create our kvm bootstrap node if needed
+  hosts: kvm_host
+  become: true
+  roles:
+    - role: bdbstudios.openshift_kvm.provision_support_kvm_nodes
+      when: use_kvm_helpers | default(false) | bool and  use_kvm_bootstrap  | default(false) | bool
+      vars:
+        use_kvm_bastion: false
+        use_kvm_bootstrap: true
+
+...

@@ -1,0 +1,43 @@
+---
+
+- name: Install KVM server
+  hosts: kvm_host
+  become: true
+
+  pre_tasks:
+    - name: Check we are running Enterprise Linux
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family == "RedHat"
+        fail_msg: "Please run this against an Enterprise Linux"
+        success_msg: "Enterprise linux detected, continuing..."
+      tags:
+        - always
+  roles:
+    - role: bdbstudios.openshift_kvm.prepare_server
+      tags:
+        - kvm
+        - network
+
+  post_tasks:
+    - name: Set our Network Bridge Name
+      ansible.builtin.set_fact:
+        network_bridge_name: "{{ virt_net_facts.ansible_facts.ansible_libvirt_networks[dns.clusterid].bridge }}"
+      tags:
+        - always
+
+    - name: Restart our primary interface
+      tags:
+        - always
+      block:
+        - name: Restart connection {{ ansible_default_ipv4.alias }}
+          ansible.builtin.command:
+            cmd: "nmcli con up {{ ansible_default_ipv4.alias }}"
+          changed_when: true
+      rescue:
+        - name: Restart connection System {{ ansible_default_ipv4.alias }}
+          ansible.builtin.command:
+            cmd: "nmcli con up 'System {{ ansible_default_ipv4.alias }}'"
+          changed_when: true
+
+...

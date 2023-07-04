@@ -1,0 +1,7 @@
+---
+
+# Squid proxy config
+configure_squid_proxy: true
+use_proxy_authentication: false
+
+...
