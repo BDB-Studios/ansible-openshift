@@ -25,7 +25,7 @@
   post_tasks:
     - name: Set our Network Bridge Name
       ansible.builtin.set_fact:
-        network_bridge_name: "{{ virt_net_facts.ansible_facts.ansible_libvirt_networks[dns.clusterid].bridge }}"
+        network_bridge_name: "{{ prepare_server_virt_net_facts.ansible_facts.ansible_libvirt_networks[dns.clusterid].bridge }}"
       tags:
         - always
 
