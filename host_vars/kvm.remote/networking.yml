@@ -1,5 +1,5 @@
 ---
-
+cluster_id: "kvm"
 dns:
   domain: "openshift.internal"
   clusterid: "{{ cluster_id }}"
