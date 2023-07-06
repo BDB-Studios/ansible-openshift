@@ -1,0 +1,16 @@
+---
+
+networking_defaults:
+  tld: "{{ cluster_id }}.{{ default_domain }}"
+  ns1: "{{ bastion.ip_address }}"
+  ns2: "8.8.8.8"
+  gateway: "{{ ansible_default_ipv4.addresses }}"
+  ntp:
+    - "8.8.8.8"
+    - "1.1.1.1"
+  subnet_mask: "{{ mms_networks.pg.subnet_mask}}"
+  broadcast: "{{ mms_networks.pg.broadcast}}"
+  network: "{{ mms_networks.pg.network}}"
+  prefix: "{{ mms_networks.pg.prefix}}"
+
+...

@@ -1,0 +1,14 @@
+---
+
+rhcos_version: "4.13/latest"
+
+coreos:
+  base_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/{{ rhcos_version }}/"
+  files:
+    - src: "rhcos-live-kernel-x86_64"
+      dest: "/var/lib/tftpboot/rhcos/kernel"
+    - src: "rhcos-live-initramfs.x86_64.img"
+      dest: "/var/lib/tftpboot/rhcos/initramfs.img"
+    - src: "rhcos-live-rootfs.x86_64.img"
+      dest: "/var/www/html/rhcos/rootfs.img"
+  install_disk: "/dev/{{ default_openshift_install_device }}"

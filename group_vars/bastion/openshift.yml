@@ -1,0 +1,16 @@
+---
+
+default_openshift_install_device: sda
+openshift_version: "stable-4.13"
+
+openshift:
+  base_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/{{ openshift_version }}/"
+  files:
+    - file: "openshift-client-linux.tar.gz"
+      creates: "/usr/bin/oc"
+    - file: "openshift-install-linux.tar.gz"
+      creates: "/usr/bin/openshift-install"
+
+kube_env: "/root/{{ dns.clusterid }}.{{ dns.domain }}/auth/kubeconfig"
+
+...

@@ -1,0 +1,145 @@
+---
+
+- name: Smoke test bastion servers
+  hosts: bastion
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Gather package facts
+      ansible.builtin.package_facts:
+
+    - name: Gather information firewalld about active zones
+      ansible.posix.firewalld_info:
+        active_zones: true
+      register: firewalld_facts
+
+  tasks:
+    - name: Ensure the following packages are not installed natively
+      ansible.builtin.assert:
+        that: '"{{ package }}" not in ansible_facts.packages'
+      loop:
+        - nginx
+        - httpd
+        - bind
+        - dhcpd
+        - tftp-server
+      loop_control:
+        loop_var: package
+
+    - name: Ensure the following packages are installed natively
+      ansible.builtin.assert:
+        that: '"{{ package }}" in ansible_facts.packages'
+      loop:
+        - vim-enhanced
+        - yum
+        - nmap-ncat
+        - net-tools
+        - epel-release
+        - python36
+        - python3-pip
+      loop_control:
+        loop_var: package
+
+    - name: Ensure that our default ip address is configured
+      ansible.builtin.assert:
+        that: '"{{ ansible_default_ipv4.address }}" == "{{ bastion.ipaddr }}"'
+
+    - name: Ensure the following services are running
+      ansible.builtin.assert:
+        that:
+          - '"{{ service }}.service" in ansible_facts.services'
+          - 'ansible_facts.services["{{ service }}.service"].state == "running"'
+      loop:
+        - httpd
+        - tftp
+        - dhcpd
+      loop_control:
+        loop_var: service
+
+    - name: Ensure the squid service is running if enabled
+      ansible.builtin.assert:
+        that:
+          - '"squid.service" in ansible_facts.services'
+          - 'ansible_facts.services["squid.service"].state == "running"'
+      when: configure_squid_proxy | default(false) | bool
+
+    - name: Ensure the named service is running if enabled
+      ansible.builtin.assert:
+        that:
+          - '"named.service" in ansible_facts.services'
+          - 'ansible_facts.services["named.service"].state == "running"'
+          - '"dns" in firewalld_facts.firewalld_info.zones.public.services'
+      when: configure_dns | default(false) | bool
+
+    - name: Ensure the haproxy service is running if enabled
+      ansible.builtin.assert:
+        that:
+          - '"haproxy.service" in ansible_facts.services'
+          - 'ansible_facts.services["haproxy.service"].state == "running"'
+          - '"http" in firewalld_facts.firewalld_info.zones.public.services'
+          - '"https" in firewalld_facts.firewalld_info.zones.public.services'
+      when: configure_haproxy | default(false) | bool
+
+    - name: Ensure that the following services are enabled in firewalld
+      ansible.builtin.assert:
+        that:
+          - '"{{ service }}" in firewalld_facts.firewalld_info.zones.public.services'
+      loop:
+        - ssh
+        - tftp
+        - dhcp
+      loop_control:
+        loop_var: service
+
+    - name: Ensure that the following ports are open in the firewall
+      ansible.builtin.wait_for:
+        port: "{{ port }}"
+      loop:
+        - 6443
+        - 8080
+        - 22623
+      loop_control:
+        loop_var: port
+
+    - name: Check if we have our oc binary
+      ansible.builtin.stat:
+        path: /bin/oc
+      register: oc_stat
+
+    - name: Assert oc binary exists, is executable and is owned by root
+      ansible.builtin.assert:
+        that:
+          - oc_stat.stat.exists
+          - oc_stat.stat.executable
+          - oc_stat.stat.pw_name == 'root'
+
+    - name: Check if we have our openshift-install binary
+      ansible.builtin.stat:
+        path: /bin/openshift-install
+      register: oi_stat
+
+    - name: Assert openshift-install binary exists, is executable and is owned by root
+      ansible.builtin.assert:
+        that:
+          - oi_stat.stat.exists
+          - oi_stat.stat.executable
+          - oi_stat.stat.pw_name == 'root'
+
+    - name: Check if we have our openshift cluster configuration directory
+      ansible.builtin.stat:
+        path: "/root/{{ dns.clusterid }}.{{ networking_defaults.tld }}"
+      register: config_stat
+
+    - name: Assert directory exists, is a dir and owned by root
+      ansible.builtin.assert:
+        that:
+          - config_stat.stat.exists
+          - config_stat.stat.isdir is defined
+          - config_stat.stat.isdir
+          - config_stat.stat.pw_name == 'root'
+
+...

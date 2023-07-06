@@ -9,8 +9,19 @@ jobs:
     name: Ansible Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Install deps
-        run: ansible-galaxy collection install community.general ansible.posix containers.podman community.crypto
+      - name: Install galaxy collections
+        run: >
+          ansible-galaxy collection install
+          community.libvirt
+          ansible.posix
+          kubernetes.core
+          community.crypto
+          community.general
+          containers.podman
+          community.docker
+          community.okd
+          git+https://github.com/BDB-Studios/ansible-openshift-bootstrap-collection.git
+          git+https://github.com/BDB-Studios/ansible-openshift-kvm-collection.git
       - name: Run ansible-lint
         uses: ansible/ansible-lint@main # or version tag instead of 'main'
 

@@ -1,0 +1,41 @@
+---
+
+interface_name: "eth1"
+default_openshift_install_device: vda
+control_plane_cpu: &CP_CPU 8
+control_plane_memory: &CP_MEM 49152
+
+vm_disks: &VM_DISKS
+  - device: vdb
+    size: 1000G
+  - device: vdc
+    size: 1000G
+  - device: vdd
+    size: 1000G
+
+bootstrap:
+  - name: "bootstrap"
+    ipaddr: "192.168.50.11"
+    macaddr: "52:54:00:a0:e5:2a"
+    vm_memory: "8192"
+control_planes:
+  - name: "controlplane01"
+    ipaddr: "192.168.50.21"
+    macaddr: "52:54:00:59:8b:b8"
+    vm_memory: *CP_MEM
+    vm_cpu: *CP_CPU
+    vm_extra_disks: *VM_DISKS
+  - name: "controlplane02"
+    ipaddr: "192.168.50.22"
+    macaddr: "52:54:00:46:06:22"
+    vm_memory: *CP_MEM
+    vm_cpu: *CP_CPU
+    vm_extra_disks: *VM_DISKS
+  - name: "controlplane03"
+    ipaddr: "192.168.50.23"
+    macaddr: "52:54:00:47:fd:19"
+    vm_memory: *CP_MEM
+    vm_cpu: *CP_CPU
+    vm_extra_disks: *VM_DISKS
+
+...

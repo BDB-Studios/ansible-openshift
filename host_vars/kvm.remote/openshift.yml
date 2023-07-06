@@ -1,0 +1,6 @@
+---
+
+openshift_version: "latest-4.13"
+rhcos_version: "4.13/latest"
+
+...

@@ -1,0 +1,8 @@
+---
+
+bastion:
+  name: "bastion"
+  ipaddr: "{{ ansible_default_ipv4.address }}"
+  networkifacename: "{{ network_bridge_name }}"
+
+...
