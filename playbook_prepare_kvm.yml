@@ -27,6 +27,7 @@
         - always
 
     - name: Restart our primary interface
+      when: restart_primary_interface | default(true) | bool
       tags:
         - always
       block:
