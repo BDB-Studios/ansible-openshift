@@ -1,0 +1,49 @@
+---
+
+- name: Destroy KVM Openshift Cluster
+  hosts: kvm_host
+  become: true
+
+  pre_tasks:
+    - name: Get our service facts
+      ansible.builtin.service_facts:
+      tags:
+        - always
+
+    - name: Ensure that the cluster_id variable is defined
+      ansible.builtin.assert:
+        that:
+          - cluster_id is defined
+        fail_msg: "Please pass in a unique cluster_id variable using `-e cluster_id='' this is the name of your OS cluster"
+      tags:
+        - always
+  roles:
+    - role: bdbstudios.openshift_kvm.destroy_cluster
+      vars:
+        remove_bootstrap: true
+        remove_controlplanes: true
+        remove_workers: true
+        remove_network: true
+        remove_cluster_config: true
+  tags:
+    - kvm
+
+  post_tasks:
+    - name: Unconfigure the squid proxy if running
+      when: "'squid.service' in services"
+      tags:
+        - always
+      block:
+        - name: Stop the squid proxy
+          ansible.builtin.systemd:
+            name: squid
+            state: stopped
+            enabled: false
+
+        - name: Remove the proxy config file
+          ansible.builtin.file:
+            state: absent
+            path: /etc/profile.d/proxy.sh
+
+
+...

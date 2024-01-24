@@ -1,0 +1,18 @@
+---
+
+configure_dns: true
+configure_dhcp: true
+configure_haproxy: true
+
+configure_squid_proxy: false
+use_proxy_authentication: false
+proxy_port: 3128
+
+dhcpd_image: "bdbstudios/dhcpd:el8-latest"
+haproxy_image: "bdbstudios/haproxy:el8-latest"
+httpd_image: "bdbstudios/httpd:el8-latest"
+named_image: "bdbstudios/named:el8-latest"
+squid_image: "bdbstudios/squid:el8-latest"
+tfptd_image: "bdbstudios/tftpd:el8-latest"
+
+...

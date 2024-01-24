@@ -1,0 +1,7 @@
+---
+
+use_kvm_helpers: true
+
+default_domain: "openshift.local"
+
+...

@@ -1,0 +1,8 @@
+---
+
+ssh:
+  user: root
+  key_path: /root/.ssh/openshift_rsa
+  bit_depth: 2048
+
+...
